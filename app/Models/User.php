@@ -12,7 +12,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory,HasApiTokens, Notifiable;
+    use HasFactory, HasApiTokens, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -55,8 +55,12 @@ class User extends Authenticatable
     {
         static::creating(function ($model) {
             if (empty($model->uuid)) {
-                $model->uuid = (string) Str::uuid(); 
+                $model->uuid = (string) Str::uuid();
             }
         });
+    }
+
+    public function booking(){
+        $this->hasMany(Booking::class);
     }
 }

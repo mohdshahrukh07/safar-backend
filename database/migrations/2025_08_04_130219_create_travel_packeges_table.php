@@ -42,7 +42,7 @@ return new class extends Migration
             $table->string('location');
             $table->string('discount');
             $table->string('cutprice');
-            $table->string('price');
+            $table->integer('price');
             $table->text('discription1');
             $table->text('discription2');
             $table->text('day1');

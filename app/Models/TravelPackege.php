@@ -28,4 +28,8 @@ class TravelPackege extends Model
         "img5",
         "destination",
     ];
+
+    public function booking (){
+        $this->hasMany(Booking::class);
+    }
 }
