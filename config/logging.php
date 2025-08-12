@@ -57,6 +57,15 @@ return [
             'channels' => explode(',', (string) env('LOG_STACK', 'single')),
             'ignore_exceptions' => false,
         ],
+        
+        'database' => [
+            'driver' => 'custom',
+            'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
+            'name' => 'Basic DB Logging',
+            'processors' => [
+                App\Processor\LogProcessor::class,
+            ],
+        ],
 
         'single' => [
             'driver' => 'single',
