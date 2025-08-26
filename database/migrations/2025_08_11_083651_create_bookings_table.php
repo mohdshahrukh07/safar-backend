@@ -17,12 +17,12 @@ return new class extends Migration
     
     $table->foreignId('user_id');
     $table->foreignId('travel_packege_id');
-    
+    $table->string('booking_code')->unique();
     $table->text('address');
     $table->date('start_date');
     $table->date('end_date');
     
-    $table->unsignedInteger('adults')->default(0);
+    $table->unsignedInteger('adults');
     $table->unsignedInteger('teenagers')->default(0)->nullable();
     $table->unsignedInteger('children')->default(0)->nullable();
     

@@ -9,7 +9,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Validation\ValidationException;
-
+use Illuminate\Support\Facades\Log;
 abstract class Controller
 {
     use AuthorizesRequests;
@@ -33,6 +33,7 @@ abstract class Controller
                 return response(['status' => false, 'message' => __('duplicate_record_found')], 500);
             }
         } catch (ValidationException $e) {
+            
             return response(['status' => false, 'errors' => $e->validator->errors()], 422);
         } catch (Exception $e) {
             logException($e);

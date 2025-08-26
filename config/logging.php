@@ -63,7 +63,7 @@ return [
             'via' => danielme85\LaravelLogToDB\LogToDbHandler::class,
             'name' => 'Basic DB Logging',
             'processors' => [
-                App\Processor\LogProcessor::class,
+                // App\Processor\LogProcessor::class,
             ],
         ],
 

@@ -11,18 +11,18 @@ class UserController extends Controller
 {
     public function signup(Request $request)
     {
-        // Validate the request data
-        $request->validate([
-            'username' => 'required|string|max:255|unique:users',
-            'firstName' => 'required|string|max:255',
-            'lastName' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
-        ]);
-
-        try {
+        return $this->handleAction(function () use ($request) {
+            // Validate the request data
+            $request->validate([
+                'username' => 'required|string|max:255|unique:users',
+                'firstName' => 'required|string|max:255',
+                'lastName' => 'required|string|max:255',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|min:8',
+            ]);
             $user = [];
-            DB::transaction(function () use ($request, &$user) {
+            $token = [];
+            DB::transaction(function () use ($request, &$token, &$user) {
                 // Create a new user instance
                 $user = User::create([
                     'username' => $request->username,
@@ -31,31 +31,32 @@ class UserController extends Controller
                     'email' => $request->email,
                     'password' => bcrypt($request->password),
                 ]);
+
+                if (isset($user) && !empty($user)) {
+                    if (!Auth::attempt($request->only('email', 'password'))) {
+                        return response()->json(['message' => 'Unauthorized'], 401);
+                    }
+
+                    $user = Auth::user();
+                    $token = $user->createToken('auth_token')->plainTextToken;
+                }
             });
 
-            if (isset($user) && !empty($user)) {
-                if (!Auth::attempt($request->only('email', 'password'))) {
-                    return response()->json(['message' => 'Unauthorized'], 401);
-                }
-
-                $user = Auth::user();
-                $token = $user->createToken('auth_token')->plainTextToken;
-                return response()->json(['message' => 'You Successfully Signup', 'token' => $token, 'user' => $user]);
-            }
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'User creation failed', 'error' => $e->getMessage()], 500);
-        }
+            return response()->json(['message' => 'You Successfully Signup', 'token' => $token, 'user' => $user]);
+        });
     }
     public function login(Request $request)
     {
-        // Validate the request data
-        $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string',
-        ]);
+        return $this->handleAction(function () use ($request) {
 
-        // Attempt to authenticate the user
-        try {
+            // Validate the request data
+            $request->validate([
+                'email' => 'required|string|email',
+                'password' => 'required|string',
+            ]);
+
+            // Attempt to authenticate the user
+
             if (!Auth::attempt($request->only('email', 'password'))) {
                 return response()->json(['message' => 'Unauthorized'], 401);
             }
@@ -64,9 +65,7 @@ class UserController extends Controller
             $user = Auth::user();
             $token = $user->createToken('auth_token')->plainTextToken;
             return response()->json(['message' => 'You Successfully logged In', 'token' => $token, 'user' => $user]);
-        } catch (\Exception $e) {
-            return response()->json(['message' => 'Login failed', 'error' => $e->getMessage()], 500);
-        }
+        });
     }
 
     public function logout(Request $request)
