@@ -29,7 +29,8 @@ class TravelPackege extends Model
         "destination",
     ];
 
-    public function booking (){
-        $this->hasMany(Booking::class);
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class, 'travel_packege_id');
     }
 }

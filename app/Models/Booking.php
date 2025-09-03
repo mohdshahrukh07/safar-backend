@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\str;
 use Illuminate\Support\Carbon;
+use App\Models\TravelPackege;
+
 class Booking extends Model
 {
     //
@@ -32,14 +34,17 @@ class Booking extends Model
         });
     }
 
-    public function user(){
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 
-    public function booking(){
-        $this->belongsTo(TravelPackege::class);
+    public function travelPackage()
+    {
+        return $this->belongsTo(TravelPackege::class, 'travel_packege_id');
     }
- // Mutator for start_date (before saving to DB)
+
+    // Mutator for start_date (before saving to DB)
     public function setStartDateAttribute($value)
     {
         $this->attributes['start_date'] = Carbon::parse($value);
@@ -62,5 +67,4 @@ class Booking extends Model
     {
         return Carbon::parse($value)->format('d/m/Y');
     }
- 
 }

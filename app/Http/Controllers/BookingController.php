@@ -12,7 +12,36 @@ use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
 {
-    public function show(BookingData $request) {}
+    public function show(Request $request)
+    {
+        $request->validate([
+            'travel_id' => 'required|string'
+        ]);
+        return $this->handleAction(function () use ($request) {
+            $user  = auth()->user() ?? null;
+
+            //check travel package should be exist
+            $travelPackage = TravelPackege::where('id', $request->travel_id)->first();
+            if (!$travelPackage || empty($travelPackage)) {
+                return response()->json(['message' => "Travel package not found", 'status' => false], 404);
+            }
+            // to check user have active bookings
+            $activeBookings = false;
+            if (isset($user) && ! empty($user)) {
+                $nowDate = Carbon::now();
+                $bookings = Booking::where(['user_id' => $user->id, 'travel_packege_id' => $travelPackage->id])->where('start_date', '<=', $nowDate)->get();
+                $activeBookings = ($bookings && $bookings->count() > 0) ? true : false;
+            }
+
+            $result = [
+                'travelPackage' => $travelPackage,
+                'activeBooking' => $activeBookings,
+                'allowToBook' => auth()->user() ? true : false
+            ];
+
+            return response()->json(['data' => $result, 'status' => true], 200);
+        });
+    }
 
     public function book(BookingData $request)
     {
@@ -32,8 +61,8 @@ class BookingController extends Controller
                 return response()->json(['message' => "Start date must be in the future", 'status' => false], 400);
             }
             $booking = new Booking;
-
-            DB::transaction(function () use ($booking, $request, $travelPackage) {
+            $result = [];
+            DB::transaction(function () use (&$result, $booking, $request, $travelPackage) {
                 $booking->user_id = 1;
                 $booking->travel_packege_id = $request->travelPackegeId;
                 $booking->address = $request->address;
@@ -49,12 +78,51 @@ class BookingController extends Controller
                 $booking->booking_code = $bookingService->generateBookingCode($travelPackage);
 
                 if ($booking->save()) {
-                    return response()->json(['message' => "Your Package successFully booked", 'status' => true], 201);
+                    $result = ['message' => "Your Package successFully booked", 'status' => true, 'statusCode' => 201];
                 }
             });
+            return Response()->json([$result, $result['statusCode']]);
         });
     }
 
-    public function bookedList(Request $request) {}
+    public function bookedList(Request $request)
+    {
+        return $this->handleAction(function () {
+            $user = auth()->user();
+
+            if (isset($user) && empty($user)) {
+                return response(['message' => 'you are not logged in', 'status' => true], 200);
+            }
+
+            $bookings = Booking::with('travelPackage')->where('user_id', $user->id)->get();
+            $nowDate = Carbon::now();
+
+            $result = [];
+            if (isset($bookings) && $bookings->count() > 0) {
+                foreach ($bookings as $booking) {
+
+                    $showDeleteBtn  = $showCancelBtn = $booking->start < $nowDate  ? true : false;
+                    $inProgress = ($booking->start >= $nowDate &&  $booking->end_date <= $nowDate) ? true : false;
+
+                    $result[] = [
+                        'uuid' => $booking->uuid,
+                        'booking_code' => $booking->booking_code,
+                        'title' => $booking->travelPackage->title,
+                        'start_date' => $booking->start_date,
+                        'end_date' => $booking->end_date,
+                        'showDeleteBtn' => $showDeleteBtn || !$inProgress,
+                        'inProgress' => $inProgress,
+                        'showCancelBtn' => $showCancelBtn,
+
+                    ];
+                }
+            }
+            return response()->json(['data'=>$result, 'status'=>true,], 200);
+        });
+    }
+    public function fetch(Request $request) {}
+
+    public function update(BookingData $request) {}
+
     public function destroy(Request $request) {}
 }
