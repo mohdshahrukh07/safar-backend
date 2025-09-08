@@ -72,7 +72,7 @@ class UserController extends Controller
     {
         // Validate the request data
         $request->validate([
-            'uuid' => 'reuired|string'
+            'uuid' => 'required|string'
         ]);
         try {
             if (Auth::check() && auth()->user()->uuid == $request->uuid) {
