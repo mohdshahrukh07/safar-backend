@@ -11,7 +11,7 @@ class PackageController extends Controller
     {
         try {
             // Get the first package (or use ->find($id) if needed)
-            $packages = TravelPackege::query(); // or use find($id) if ID is known
+            $packages = TravelPackege::inRandomOrder()->limit(6)->get(); // or use find($id) if ID is known
 
             if (!$packages) {
                 return response()->json(['error' => 'No package found'], 404);
@@ -27,7 +27,6 @@ class PackageController extends Controller
                     "price" => $package->price,
                     "urlToImage" => $package->urlToImage,
                     "destination" => $package->destination,
-                    "packageLink" => "/bookpage/" . $package->id,
                 ];
             }
 
@@ -50,7 +49,8 @@ class PackageController extends Controller
             });
 
             return response()->json([
-                'package' => $selectedPackage,
+                'status' => true,
+                'packages' => $selectedPackage,
                 'slidePackages' => $selectedSlides
             ], 200);
         } catch (\Exception $e) {
@@ -59,11 +59,10 @@ class PackageController extends Controller
     }
     public function tourList(Request $request)
     {
-
         try {
             $packeges = TravelPackege::query();
 
-            if ($request->has('destination') && $request->destination != "") {
+            if ($request->filled('destination') && $request->destination != "All_Destination") {
                 $packeges = $packeges->where('destination', $request->destination);
             }
             if ($request->filled('sort') && $request->sort != "") {
@@ -82,13 +81,11 @@ class PackageController extends Controller
                         break;
                 }
             }
+            $packeges = $packeges->get();
 
-            $packeges = $packeges->paginate(6);
-
-            return response()->json(['data' => $packeges], 200);
+            return response()->json(['status' => true, 'data' => $packeges->toArray()], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
-
         }
     }
 }

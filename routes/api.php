@@ -20,5 +20,5 @@ Route::prefix('/safar')->group(function () {
     });
 });
 
-Route::get('/', [PackageController::class, 'homeList']);
+Route::get('/home', [PackageController::class, 'homeList']);
 Route::post('/tours', [PackageController::class, 'tourList']);
