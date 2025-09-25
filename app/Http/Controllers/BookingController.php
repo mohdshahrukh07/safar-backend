@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Data\BookingData;
 use App\Models\TravelPackege;
-use BookingService;
+use App\Services\BookingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class BookingController extends Controller
@@ -39,22 +40,21 @@ class BookingController extends Controller
                 'allowToBook' => auth()->user() ? true : false
             ];
 
-            return response()->json(['data' => $result, 'status' => true], 200);
+            return response(['data' => array(...$result), 'status' => true], 200);
         });
     }
 
     public function book(BookingData $request)
     {
         return $this->handleAction(function () use ($request) {
-            $travelPackage = TravelPackege::where('id', $request->travelPackegeId);
-
+            $travelPackage = TravelPackege::where('id', $request->travelPackegeId)->first();
             if (!$travelPackage || empty($travelPackage)) {
                 return response()->json(['message' => "travel package not found", 'status' => false], 404);
             }
-            if (!auth()->check()) {
+            if (!Auth::guard('sanctum')->check()) {
                 return response()->json(['message' => "you must be logged in to book a package", 'status' => false], 401);
             }
-            if ($request->adult <= 0 || $request->adult  === null) {
+            if ($request->adults <= 0 || $request->adults  === null) {
                 return response()->json(['message' => "At least one adult is required", 'status' => false], 400);
             }
             if ($request->startDate > Carbon::now() == false) {
@@ -62,26 +62,26 @@ class BookingController extends Controller
             }
             $booking = new Booking;
             $result = [];
-            DB::transaction(function () use (&$result, $booking, $request, $travelPackage) {
+            DB::transaction(function () use (&$result, $request, $travelPackage, &$booking) {
                 $booking->user_id = 1;
                 $booking->travel_packege_id = $request->travelPackegeId;
                 $booking->address = $request->address;
-                $booking->start_date = Carbon::createFromFormat('d/m/Y', $request->startDate);
-                $booking->end_date   = Carbon::createFromFormat('d/m/Y', $request->startDate)->addDays(3);
-                $booking->adult = $request->adult;
+                $booking->start_date = Carbon::createFromFormat('Y-m-d', $request->startDate);
+                $booking->end_date   = Carbon::createFromFormat('Y-m-d', $request->startDate)->addDays(3);
+                $booking->adults = $request->adults;
                 $booking->teenagers = $request->teenagers ?? 0;
                 $booking->children = $request->children ?? 0;
-                //unique booking code
 
                 $bookingService = new BookingService();
-
+                $booking->total_price = $bookingService->prepareTotalBookingPrice($booking, $travelPackage->price);
                 $booking->booking_code = $bookingService->generateBookingCode($travelPackage);
-
                 if ($booking->save()) {
                     $result = ['message' => "Your Package successFully booked", 'status' => true, 'statusCode' => 201];
+                } else {
+                    $result = ['message' => "failed to book your package", 'status' => false, 'statusCode' => 500];
                 }
             });
-            return Response()->json([$result, $result['statusCode']]);
+            return Response($result, $result['statusCode']);
         });
     }
 
@@ -117,7 +117,7 @@ class BookingController extends Controller
                     ];
                 }
             }
-            return response()->json(['data'=>$result, 'status'=>true,], 200);
+            return response()->json(['data' => $result, 'status' => true,], 200);
         });
     }
     public function fetch(Request $request) {}

@@ -11,7 +11,7 @@ class BookingData extends Data
         public string $address,
         public string $startDate,
         public int $travelPackegeId,
-        public int $adult,
+        public int $adults,
         public ?int $teenagers,
         public ?int $children
 

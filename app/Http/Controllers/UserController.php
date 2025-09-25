@@ -75,8 +75,9 @@ class UserController extends Controller
             'uuid' => 'required|string'
         ]);
         try {
-            if (Auth::check() && auth()->user()->uuid == $request->uuid) {
-                $user = Auth::user();
+            $authUser = Auth::guard('sanctum');
+            if ($authUser->check() && $authUser->user()->uuid == $request->uuid) {
+                $user = $authUser->user();
                 $user->tokens()->delete();
                 Auth::logout();
                 return response()->json(['message' => 'You have successfully logged out']);

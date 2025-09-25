@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\str;
 use Illuminate\Support\Carbon;
 use App\Models\TravelPackege;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Booking extends Model
 {
+    use SoftDeletes;
     //
     protected $fillable = [
         'uuid',
@@ -18,7 +20,8 @@ class Booking extends Model
         'address',
         'start_date',
         'end_date',
-        'adult',
+        'adults',
+        'total_price',
         'teenagers',
         'children',
 

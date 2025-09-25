@@ -21,8 +21,9 @@ return new class extends Migration
     $table->text('address');
     $table->date('start_date');
     $table->date('end_date');
-    
+    $table->unsignedInteger('total_price');
     $table->unsignedInteger('adults');
+    $table->softDeletes();
     $table->unsignedInteger('teenagers')->default(0)->nullable();
     $table->unsignedInteger('children')->default(0)->nullable();
     

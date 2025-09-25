@@ -16,8 +16,10 @@ Route::prefix('/safar')->group(function () {
         Route::post('/logout', [UserController::class, 'logout']);
     });
     Route::prefix('/booking')->group(function () {
+        Route::get('/show', [BookingController::class, 'show']);
         Route::post('/book', [BookingController::class, 'book']);
     });
+    Route::post('/deshboard/bookedList', [UserController::class, 'bookedList']);
 });
 
 Route::get('/home', [PackageController::class, 'homeList']);
