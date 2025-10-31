@@ -9,7 +9,11 @@
     ],
     "license": "MIT",
     "require": {
+<<<<<<< HEAD
         "php": "^8.2 || ^8.3 || ^8.4",
+=======
+        "php": "^8.2",
+>>>>>>> 1883616f3fbd063dd71d7a8d5dd154943882691c
         "danielme85/laravel-log-to-db": "^4.1",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.2",
