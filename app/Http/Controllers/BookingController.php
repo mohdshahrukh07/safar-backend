@@ -85,13 +85,13 @@ class BookingController extends Controller
         });
     }
 
-    public function bookedList(Request $request)
+    public function bookedList()
     {
         return $this->handleAction(function () {
-            $user = auth()->user();
-
-            if (isset($user) && empty($user)) {
-                return response(['message' => 'you are not logged in', 'status' => true], 200);
+            $authUser = Auth::guard('sanctum');
+            $user = $authUser->user();
+            if (!isset($user) && empty($user)) {
+                return response(['message' => 'you are not logged in', 'status' => false], 403);
             }
 
             $bookings = Booking::with('travelPackage')->where('user_id', $user->id)->get();
@@ -108,8 +108,9 @@ class BookingController extends Controller
                         'uuid' => $booking->uuid,
                         'booking_code' => $booking->booking_code,
                         'title' => $booking->travelPackage->title,
+                        'image' => $booking->travelPackage->urlToImage,
                         'start_date' => $booking->start_date,
-                        'end_date' => $booking->end_date,
+                        'created_date' => $booking->created_at->format('d/m/Y'),
                         'showDeleteBtn' => $showDeleteBtn || !$inProgress,
                         'inProgress' => $inProgress,
                         'showCancelBtn' => $showCancelBtn,

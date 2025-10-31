@@ -52,9 +52,9 @@ class UserController extends Controller
             // Validate the request data
             $request->validate([
                 'email' => 'required|string|email',
-                'password' => 'required|string',
+                'password' => 'required|string|min:8',
             ]);
-
+            
             // Attempt to authenticate the user
 
             if (!Auth::attempt($request->only('email', 'password'))) {
