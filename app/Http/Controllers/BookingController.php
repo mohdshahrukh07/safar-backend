@@ -100,9 +100,9 @@ class BookingController extends Controller
             $result = [];
             if (isset($bookings) && $bookings->count() > 0) {
                 foreach ($bookings as $booking) {
-
-                    $showDeleteBtn  = $showCancelBtn = $booking->start < $nowDate  ? true : false;
-                    $inProgress = ($booking->start >= $nowDate &&  $booking->end_date <= $nowDate) ? true : false;
+                    
+                    $showDeleteBtn  = $showCancelBtn = $booking->start_date < $nowDate  ? true : false;
+                    $inProgress = ($booking->start_date >= $nowDate &&  $booking->end_date <= $nowDate) ? true : false;
 
                     $result[] = [
                         'uuid' => $booking->uuid,

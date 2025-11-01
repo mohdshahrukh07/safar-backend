@@ -58,13 +58,13 @@ class UserController extends Controller
             // Attempt to authenticate the user
 
             if (!Auth::attempt($request->only('email', 'password'))) {
-                return response()->json(['message' => 'Unauthorized'], 401);
+                return response()->json(["status"=>true, 'message' => 'Unauthorized'], 401);
             }
 
             // Generate a token for the authenticated user
             $user = Auth::user();
             $token = $user->createToken('auth_token')->plainTextToken;
-            return response()->json(['message' => 'You Successfully logged In', 'token' => $token, 'user' => $user]);
+            return response()->json(["status"=>true ,'message' => 'You Successfully logged In', 'token' => $token, 'user' => $user],200);
         });
     }
 
